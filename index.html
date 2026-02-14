@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>EX TRADER VIP BOT</title>
+  <style>
+    body { background: #8ec5fc; font-family: Arial; text-align:center; padding:20px; }
+    select, button { padding:10px; margin:10px; font-size:16px; }
+    #result { margin-top:20px; font-size:18px; }
+    .call { color:green; font-weight:bold; }
+    .put { color:red; font-weight:bold; }
+    #timer { font-size:20px; margin-top:15px; color:blue; }
+    .links a { display:block; margin:5px; font-size:16px; text-decoration:none; color:#fff; background:#ff5722; padding:8px; border-radius:5px; }
+  </style>
+</head>
+<body>
+
+<h2>EX TRADER OTC BOT>
+
+<!-- Pair selection -->
+<select id="pairSelect">
+  <option value="EUR/JPY">EUR/JPY OTC</option>
+  <option value="CAD/JPY">CAD/JPY OTC</option>
+  <option value="EUR/GBP">EUR/OTC OTC</option>
+  <option value="EUR/USD">EUR/USD OTC</option>
+  <option value="AUD/JPY">AUD/JPY OTC</option>
+  <option value="USD/JPY">USD/JPY OTC</option>
+  <option value="CAD/AUD">CAD/CHF OTC</option>
+  <option value="EUR/CAD">EUR/CAD OTC</option>
+  <option value="AUD/USD">AUD/USD OTC</option>
+  <option value="GBP/AUD">GBP/AUD OTC</option>
+  <option value="GBP/JPY">GBP/JPY OTC</option>
+  <option value="GBP/USD">GBP/USD OTC</option>
+  <option value="USD/CAD">USD/CAD OTC</option>
+  <option value="USD/BRL">USD/BRL OTC</option>
+  <option value="USD/INR">USD/INR OTC</option>
+  <option value="USD/TRY">USD/TRY OTC</option>
+  <option value="USD/DZD">USD/DZD OTC</option>
+</select>
+
+<br>
+<button onclick="startAnalysis()">Start Analysis</button>
+
+<div id="result"></div>
+<div id="timer"></div>
+
+<!-- Links section -->
+<div class="links">
+  <a href="https://t.me/+UCj_2VjTFONlMTA9" target="_blank">Join Telegram Group</a>
+  <a href="https://www.tiktok.com/@mrfahim.0000?_r=1&_t=ZS-93rFAIZ8mdo" target="_blank">Visit TikTok</a>
+  <a href="https://youtube.com/@extrader00?si=vZHLsNcaOkFYxCbD" target="_blank">Watch YouTube</a>
+</div>
+
+<script>
+// ===== FETCH CANDLES =====
+async function getCandles(pair) {
+  const url = `https://api.twelvedata.com/time_series?symbol=${pair}&interval=1min&outputsize=50&apikey=42151b30e2194ab783b0c518ccee36e9`;
+  const response = await fetch(url);
+  const data = await response.json();
+  if (data.status === "error") throw new Error(data.message);
+  if (!data.values) throw new Error("No candle data received.");
+  return data.values.map(v => parseFloat(v.close)).reverse();
+}
+
+// ===== RSI CALCULATION =====
+function calculateRSI(closes, period=14){
+  let gains=0, losses=0;
+  for(let i=closes.length-period;i<closes.length-1;i++){
+    let diff=closes[i+1]-closes[i];
+    if(diff>0) gains+=diff; else losses-=diff;
+  }
+  let avgGain=gains/period;
+  let avgLoss=losses/period;
+  if(avgLoss===0) return 100;
+  let rs=avgGain/avgLoss;
+  return 100-(100/(1+rs));
+}
+
+// ===== SIGNAL LOGIC =====
+function generateNextCandleSignal(rsi){
+  if(rsi < 50) return {signal:"CALL", className:"call"};
+  else return {signal:"PUT", className:"put"};
+}
+// ===== TIMER =====
+function startTimer(seconds=120){
+  let time=seconds;
+  const timerDiv=document.getElementById("timer");
+  const interval=setInterval(()=>{
+    timerDiv.innerHTML="Entry Timer: "+time+"s";
+    time--;
+    if(time<0){
+      clearInterval(interval);
+      timerDiv.innerHTML="Time Finished!";
+    }
+  },1000);
+}
+
+// ===== MAIN =====
+async function startAnalysis(){
+  const resultDiv=document.getElementById("result");
+  resultDiv.innerHTML="Analyzing selected pair...";
+  const pair = document.getElementById("pairSelect").value;
+  const now = new Date();
+
+  try{
+    const closes = await getCandles(pair);
+    const rsi = calculateRSI(closes);
+
+    const signalObj = generateNextCandleSignal(rsi);
+
+    const entryTime = new Date(now.getTime()+2*60*1000);
+    const timeStr = entryTime.getHours().toString().padStart(2,'0')+":"+
+                    entryTime.getMinutes().toString().padStart(2,'0')+":"+
+                    entryTime.getSeconds().toString().padStart(2,'0');
+
+    resultDiv.innerHTML =
+      `<b>${pair}</b><br>`+
+      "RSI: "+rsi.toFixed(2)+"<br>"+
+      "Next 2-min Candle Signal: <span class='"+signalObj.className+"'>"+signalObj.signal+"</span><br>"+
+      "Expected Entry Time: "+timeStr;
+
+    startTimer(120);
+
+  }catch(err){
+    resultDiv.innerHTML=`API Error or Limit Exceeded!`;
+  }
+}
+</script>
+</body>
+</html>
