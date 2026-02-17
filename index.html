@@ -1,129 +1,223 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>EX TRADER VIP BOT</title>
-  <style>
-    body { background: #8ec5fc; font-family: Arial; text-align:center; padding:20px; }
-    select, button { padding:10px; margin:10px; font-size:16px; }
-    #result { margin-top:20px; font-size:18px; }
-    .call { color:green; font-weight:bold; }
-    .put { color:red; font-weight:bold; }
-    #timer { font-size:20px; margin-top:15px; color:blue; }
-    .links a { display:block; margin:5px; font-size:16px; text-decoration:none; color:#fff; background:#ff5722; padding:8px; border-radius:5px; }
-  </style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EX TRADER NON MTG BOT</title>
+
+<style>
+body{
+  margin:0;
+  background:#0d0d1f;
+  font-family:Arial;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.card{
+  background:#151530;
+  padding:25px;
+  width:90%;
+  max-width:400px;
+  border-radius:20px;
+  box-shadow:0 0 25px #00ff88;
+}
+
+h1{
+  text-align:center;
+  color:#00ff88;
+  text-shadow:0 0 15px #00ff88;
+}
+
+label{
+  margin-top:10px;
+  display:block;
+}
+
+select,input{
+  width:100%;
+  padding:10px;
+  margin-top:5px;
+  margin-bottom:15px;
+  background:#0f0f1a;
+  color:white;
+  border:1px solid #00ff88;
+  border-radius:10px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  background:#00ff00;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 0 15px #00ff00;
+}
+
+.result{
+  margin-top:20px;
+  padding:15px;
+  border-radius:10px;
+  text-align:center;
+  font-size:18px;
+}
+
+.up{
+  background:#002200;
+  color:#00ff00;
+  box-shadow:0 0 20px #00ff00;
+}
+
+.down{
+  background:#220000;
+  color:red;
+  box-shadow:0 0 20px red;
+}
+
+.hidden{
+  display:none;
+}
+</style>
 </head>
+
 <body>
 
-<h2>EX TRADER OTC BOT>
+<div class="card" id="pinCard">
+<h1>ENTER PIN</h1>
+<input type="password" id="pinInput" placeholder="Enter PIN Code">
+<button onclick="checkPin()">UNLOCK</button>
+<p id="pinError" style="color:red;"></p>
+</div>
 
-<!-- Pair selection -->
-<select id="pairSelect">
-  <option value="EUR/JPY">EUR/JPY OTC</option>
-  <option value="CAD/JPY">CAD/JPY OTC</option>
-  <option value="EUR/GBP">EUR/OTC OTC</option>
-  <option value="EUR/USD">EUR/USD OTC</option>
-  <option value="AUD/JPY">AUD/JPY OTC</option>
-  <option value="USD/JPY">USD/JPY OTC</option>
-  <option value="CAD/AUD">CAD/CHF OTC</option>
-  <option value="EUR/CAD">EUR/CAD OTC</option>
-  <option value="AUD/USD">AUD/USD OTC</option>
-  <option value="GBP/AUD">GBP/AUD OTC</option>
-  <option value="GBP/JPY">GBP/JPY OTC</option>
-  <option value="GBP/USD">GBP/USD OTC</option>
-  <option value="USD/CAD">USD/CAD OTC</option>
-  <option value="USD/BRL">USD/BRL OTC</option>
-  <option value="USD/INR">USD/INR OTC</option>
-  <option value="USD/TRY">USD/TRY OTC</option>
-  <option value="USD/DZD">USD/DZD OTC</option>
+<div class="card hidden" id="mainBot">
+
+<h1>EX TRADER NON MTG BOT</h1>
+
+<label>Broker</label>
+<select id="broker">
+<option>QUOTEX</option>
+<option>POCKET OPTION</option>
+<option>IQ OPTION</option>
+<option>BINOMO</option>
+<option>EXPERT OPTION</option>
+<option>OLYMP TRADE</option>
 </select>
 
-<br>
-<button onclick="startAnalysis()">Start Analysis</button>
+<label>Market</label>
+<select id="market">
+<option>EUR/USD</option>
+<option>GBP/USD</option>
+<option>USD/JPY</option>
+<option>AUD/USD</option>
+<option>USD/CHF</option>
+<option>USD/CAD</option>
+<option>NZD/USD</option>
 
-<div id="result"></div>
-<div id="timer"></div>
+<!-- Cross -->
+<option>EUR/GBP</option>
+<option>EUR/JPY</option>
+<option>EUR/AUD</option>
+<option>EUR/CHF</option>
+<option>GBP/JPY</option>
+<option>GBP/AUD</option>
+<option>AUD/JPY</option>
 
-<!-- Links section -->
-<div class="links">
-  <a href="https://t.me/+UCj_2VjTFONlMTA9" target="_blank">Join Telegram Group</a>
-  <a href="https://www.tiktok.com/@mrfahim.0000?_r=1&_t=ZS-93rFAIZ8mdo" target="_blank">Visit TikTok</a>
-  <a href="https://youtube.com/@extrader00?si=vZHLsNcaOkFYxCbD" target="_blank">Watch YouTube</a>
+<option>EUR/USD (OTC)</option>
+<option>GBP/USD (OTC)</option>
+<option>USD/JPY (OTC)</option>
+<option>AUD/USD (OTC)</option>
+<option>USD/CAD (OTC)</option>
+<option>USD/CHF (OTC)</option>
+<option>NZD/USD (OTC)</option>
+
+<option>EUR/GBP (OTC)</option>
+<option>EUR/JPY (OTC)</option>
+<option>EUR/AUD (OTC)</option>
+<option>EUR/CHF (OTC)</option>
+
+<option>GBP/JPY (OTC)</option>
+<option>GBP/AUD (OTC)</option>
+<option>GBP/CHF (OTC)</option>
+
+<option>AUD/JPY (OTC)</option>
+<option>AUD/CAD (OTC)</option>
+
+<option>NZD/JPY (OTC)</option>
+
+<option>USD/TRY (OTC)</option>
+<option>USD/ZAR (OTC)</option>
+
+<option>BTC/USD (OTC)</option>
+<option>ETH/USD (OTC)</option>
+<option>LTC/USD (OTC)</option>
+<option>XRP/USD (OTC)</option>
+
+</select>
+
+<label>Timeframe</label>
+<select id="timeframe">
+<option>M1</option>
+<option>M5</option>
+<option>M15</option>
+</select>
+
+<label>Start Time</label>
+<input type="time" id="time">
+
+<button onclick="generateSignal()">GENERATE SIGNAL</button>
+
+<div id="output"></div>
+
 </div>
 
 <script>
-// ===== FETCH CANDLES =====
-async function getCandles(pair) {
-  const url = `https://api.twelvedata.com/time_series?symbol=${pair}&interval=1min&outputsize=50&apikey=42151b30e2194ab783b0c518ccee36e9`;
-  const response = await fetch(url);
-  const data = await response.json();
-  if (data.status === "error") throw new Error(data.message);
-  if (!data.values) throw new Error("No candle data received.");
-  return data.values.map(v => parseFloat(v.close)).reverse();
+
+// 🔐 এখানে PIN সেট করো
+let correctPin = "8080";
+
+function checkPin(){
+let userPin = document.getElementById("pinInput").value;
+
+if(userPin === correctPin){
+document.getElementById("pinCard").classList.add("hidden");
+document.getElementById("mainBot").classList.remove("hidden");
+}else{
+document.getElementById("pinError").innerText = "Wrong PIN!";
+}
 }
 
-// ===== RSI CALCULATION =====
-function calculateRSI(closes, period=14){
-  let gains=0, losses=0;
-  for(let i=closes.length-period;i<closes.length-1;i++){
-    let diff=closes[i+1]-closes[i];
-    if(diff>0) gains+=diff; else losses-=diff;
+function generateSignal(){
+
+  let broker = document.getElementById("broker").value;
+  let market = document.getElementById("market").value;
+  let timeframe = document.getElementById("timeframe").value;
+  let time = document.getElementById("time").value;
+
+  let direction = Math.random() > 0.5 ? "UP" : "DOWN";
+
+  let outputDiv = document.getElementById("output");
+
+  if(direction === "UP"){
+    outputDiv.className = "result up";
+  } else {
+    outputDiv.className = "result down";
   }
-  let avgGain=gains/period;
-  let avgLoss=losses/period;
-  if(avgLoss===0) return 100;
-  let rs=avgGain/avgLoss;
-  return 100-(100/(1+rs));
+
+  outputDiv.innerHTML = `
+  <b>PREDICTION RESULT</b><br><br>
+  Broker: ${broker} <br>
+  Market: ${market} <br>
+  Timeframe: ${timeframe} <br>
+  Start Time: ${time} <br><br>
+  <h2>${direction}</h2>
+  `;
 }
 
-// ===== SIGNAL LOGIC =====
-function generateNextCandleSignal(rsi){
-  if(rsi < 50) return {signal:"CALL", className:"call"};
-  else return {signal:"PUT", className:"put"};
-}
-// ===== TIMER =====
-function startTimer(seconds=120){
-  let time=seconds;
-  const timerDiv=document.getElementById("timer");
-  const interval=setInterval(()=>{
-    timerDiv.innerHTML="Entry Timer: "+time+"s";
-    time--;
-    if(time<0){
-      clearInterval(interval);
-      timerDiv.innerHTML="Time Finished!";
-    }
-  },1000);
-}
-
-// ===== MAIN =====
-async function startAnalysis(){
-  const resultDiv=document.getElementById("result");
-  resultDiv.innerHTML="Analyzing selected pair...";
-  const pair = document.getElementById("pairSelect").value;
-  const now = new Date();
-
-  try{
-    const closes = await getCandles(pair);
-    const rsi = calculateRSI(closes);
-
-    const signalObj = generateNextCandleSignal(rsi);
-
-    const entryTime = new Date(now.getTime()+2*60*1000);
-    const timeStr = entryTime.getHours().toString().padStart(2,'0')+":"+
-                    entryTime.getMinutes().toString().padStart(2,'0')+":"+
-                    entryTime.getSeconds().toString().padStart(2,'0');
-
-    resultDiv.innerHTML =
-      `<b>${pair}</b><br>`+
-      "RSI: "+rsi.toFixed(2)+"<br>"+
-      "Next 2-min Candle Signal: <span class='"+signalObj.className+"'>"+signalObj.signal+"</span><br>"+
-      "Expected Entry Time: "+timeStr;
-
-    startTimer(120);
-
-  }catch(err){
-    resultDiv.innerHTML=`API Error or Limit Exceeded!`;
-  }
-}
 </script>
+
 </body>
 </html>
