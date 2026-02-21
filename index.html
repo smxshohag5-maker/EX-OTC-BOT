@@ -1,129 +1,170 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>EX TRADER VIP BOT</title>
-  <style>
-    body { background: #8ec5fc; font-family: Arial; text-align:center; padding:20px; }
-    select, button { padding:10px; margin:10px; font-size:16px; }
-    #result { margin-top:20px; font-size:18px; }
-    .call { color:green; font-weight:bold; }
-    .put { color:red; font-weight:bold; }
-    #timer { font-size:20px; margin-top:15px; color:blue; }
-    .links a { display:block; margin:5px; font-size:16px; text-decoration:none; color:#fff; background:#ff5722; padding:8px; border-radius:5px; }
-  </style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EX TRADER - MOBILE SIGNAL BOT</title>
+<style>
+body{margin:0;padding:10px;font-family:monospace;background: linear-gradient(135deg,#0f172a,#1e293b,#0f172a);color:white;text-align:center;}
+.card{background: rgba(30,41,59,0.95);padding:15px;border-radius:15px;margin:15px auto;box-shadow:0 0 20px rgba(56,189,248,0.5);width:95%;max-width:400px;}
+button, select{width:90%;padding:10px;margin:5px 0;border:none;border-radius:6px;font-weight:bold;cursor:pointer;}
+button{ background:#38bdf8; color:black; }
+#signals{margin-top:15px;background:#0f172a;padding:10px;border-radius:10px;white-space: pre-line;max-height:250px;overflow-y:auto;text-align:left;}
+table{width:100%;border-collapse: collapse;margin-top:10px;font-size:12px;}
+th,td{border:1px solid #334155;padding:4px;}
+th{background:#1e293b;}
+td{background:#0f172a;}
+.lock{color:#ff4444;}
+</style>
 </head>
 <body>
 
-<h2>EX TRADER OTC BOT>
+<div class="card" id="optionBox">
+<h2>EX TRADER PREMIUM</h2>
+<p>Select Option</p>
+<button onclick="freeOption()">1️⃣ Free Trial (3 signals only)</button>
+<button onclick="premiumOption()">2️⃣ Premium PIN (Unlimited)</button>
+<p id="msg"></p>
+<button onclick="resetTrial()">Reset Trial (Only 1 time)</button>
+</div>
 
-<!-- Pair selection -->
-<select id="pairSelect">
-  <option value="EUR/JPY">EUR/JPY OTC</option>
-  <option value="CAD/JPY">CAD/JPY OTC</option>
-  <option value="EUR/GBP">EUR/OTC OTC</option>
-  <option value="EUR/USD">EUR/USD OTC</option>
-  <option value="AUD/JPY">AUD/JPY OTC</option>
-  <option value="USD/JPY">USD/JPY OTC</option>
-  <option value="CAD/AUD">CAD/CHF OTC</option>
-  <option value="EUR/CAD">EUR/CAD OTC</option>
-  <option value="AUD/USD">AUD/USD OTC</option>
-  <option value="GBP/AUD">GBP/AUD OTC</option>
-  <option value="GBP/JPY">GBP/JPY OTC</option>
-  <option value="GBP/USD">GBP/USD OTC</option>
-  <option value="USD/CAD">USD/CAD OTC</option>
-  <option value="USD/BRL">USD/BRL OTC</option>
-  <option value="USD/INR">USD/INR OTC</option>
-  <option value="USD/TRY">USD/TRY OTC</option>
-  <option value="USD/DZD">USD/DZD OTC</option>
+<div class="card" id="appBox" style="display:none;">
+<h3 id="title">Signal Generator</h3>
+
+<select id="pair">
+<option>EUR/USD (OTC)</option>
+<option>GBP/USD (OTC)</option>
+<option>USD/JPY (OTC)</option>
+<option>AUD/USD (OTC)</option>
+<option>USD/CAD (OTC)</option>
+<option>USD/INR (OTC)</option>
+<option>USD/PHP (OTC)</option>
+<option>USD/ARS (OTC)</option>
+<option>USD/TRY (OTC)</option>
+<option>CAD/CHF (OTC)</option>
+<option>USD/INR (OTC)</option>
+
+<option>EUR/USD</option>
+<option>GBP/USD</option>
+<option>USD/JPY</option>
+<option>AUD/USD</option>
+<option>USD/CAD</option>
+<option>USD/CHF</option>
+<option>NZD/USD</option>
+
 </select>
 
-<br>
-<button onclick="startAnalysis()">Start Analysis</button>
+<select id="count">
+<option value="3">3 Signals</option>
+<option value="5">5 Signals</option>
+<option value="10">10 Signals</option>
+<option value="20">20 Signals</option>
+<option value="30">30 Signals</option>
+</select>
 
-<div id="result"></div>
-<div id="timer"></div>
+<button onclick="generateSignals()">Generate Signals</button>
 
-<!-- Links section -->
-<div class="links">
-  <a href="https://t.me/+UCj_2VjTFONlMTA9" target="_blank">Join Telegram Group</a>
-  <a href="https://www.tiktok.com/@mrfahim.0000?_r=1&_t=ZS-93rFAIZ8mdo" target="_blank">Visit TikTok</a>
-  <a href="https://youtube.com/@extrader00?si=vZHLsNcaOkFYxCbD" target="_blank">Watch YouTube</a>
+<div id="signals"></div>
+
+<h4>Signal History</h4>
+<table>
+<thead>
+<tr><th>#</th><th>Time</th><th>Pair</th><th>Direction</th></tr>
+</thead>
+<tbody id="history"></tbody>
+</table>
 </div>
 
 <script>
-// ===== FETCH CANDLES =====
-async function getCandles(pair) {
-  const url = `https://api.twelvedata.com/time_series?symbol=${pair}&interval=1min&outputsize=50&apikey=42151b30e2194ab783b0c518ccee36e9`;
-  const response = await fetch(url);
-  const data = await response.json();
-  if (data.status === "error") throw new Error(data.message);
-  if (!data.values) throw new Error("No candle data received.");
-  return data.values.map(v => parseFloat(v.close)).reverse();
-}
+let trialUsed = localStorage.getItem("trialUsed") || "no";
+let resetUsed = localStorage.getItem("resetUsed") || "no";
+let premiumUnlocked = false;
+const PREMIUM_PIN = "9696"; // change PIN
 
-// ===== RSI CALCULATION =====
-function calculateRSI(closes, period=14){
-  let gains=0, losses=0;
-  for(let i=closes.length-period;i<closes.length-1;i++){
-    let diff=closes[i+1]-closes[i];
-    if(diff>0) gains+=diff; else losses-=diff;
-  }
-  let avgGain=gains/period;
-  let avgLoss=losses/period;
-  if(avgLoss===0) return 100;
-  let rs=avgGain/avgLoss;
-  return 100-(100/(1+rs));
-}
-
-// ===== SIGNAL LOGIC =====
-function generateNextCandleSignal(rsi){
-  if(rsi < 50) return {signal:"CALL", className:"call"};
-  else return {signal:"PUT", className:"put"};
-}
-// ===== TIMER =====
-function startTimer(seconds=120){
-  let time=seconds;
-  const timerDiv=document.getElementById("timer");
-  const interval=setInterval(()=>{
-    timerDiv.innerHTML="Entry Timer: "+time+"s";
-    time--;
-    if(time<0){
-      clearInterval(interval);
-      timerDiv.innerHTML="Time Finished!";
+function freeOption(){
+    if(trialUsed === "yes"){
+        document.getElementById("msg").innerHTML="<span class='lock'>Trial already used!</span>";
+        return;
     }
-  },1000);
+    localStorage.setItem("trialUsed","yes");
+    trialUsed = "yes";
+    premiumUnlocked = false;
+    document.getElementById("optionBox").style.display="none";
+    document.getElementById("appBox").style.display="block";
+    document.getElementById("title").innerText="Free Trial (Max 3 Signals)";
+    document.getElementById("count").value="3";
 }
 
-// ===== MAIN =====
-async function startAnalysis(){
-  const resultDiv=document.getElementById("result");
-  resultDiv.innerHTML="Analyzing selected pair...";
-  const pair = document.getElementById("pairSelect").value;
-  const now = new Date();
+function premiumOption(){
+    let pin = prompt("Enter Premium PIN:");
+    if(pin === PREMIUM_PIN){
+        premiumUnlocked = true;
+        document.getElementById("optionBox").style.display="none";
+        document.getElementById("appBox").style.display="block";
+        document.getElementById("title").innerText="Premium Signals - Unlimited";
+    } else {
+        alert("Wrong PIN! Access denied.");
+    }
+}
 
-  try{
-    const closes = await getCandles(pair);
-    const rsi = calculateRSI(closes);
+function resetTrial(){
+    if(resetUsed === "yes"){
+        alert("You can only reset trial once! No more resets allowed.");
+        return;
+    }
+    if(trialUsed === "yes"){
+        localStorage.setItem("trialUsed","no");
+        localStorage.setItem("resetUsed","yes");
+        trialUsed = "no";
+        resetUsed = "yes";
+        alert("Trial Reset! You can now try Free Trial again. (Only 1 time allowed)");
+        location.reload();
+    } else {
+        alert("Trial not used yet, no need to reset.");
+    }
+}
 
-    const signalObj = generateNextCandleSignal(rsi);
+function randomDirection(){
+    return Math.random() < 0.5 ? "PUT" : "BUY";
+}
 
-    const entryTime = new Date(now.getTime()+2*60*1000);
-    const timeStr = entryTime.getHours().toString().padStart(2,'0')+":"+
-                    entryTime.getMinutes().toString().padStart(2,'0')+":"+
-                    entryTime.getSeconds().toString().padStart(2,'0');
+function formatTime(date){
+    let h = date.getHours().toString().padStart(2,'0');
+    let m = date.getMinutes().toString().padStart(2,'0');
+    return h + ":" + m;
+}
 
-    resultDiv.innerHTML =
-      `<b>${pair}</b><br>`+
-      "RSI: "+rsi.toFixed(2)+"<br>"+
-      "Next 2-min Candle Signal: <span class='"+signalObj.className+"'>"+signalObj.signal+"</span><br>"+
-      "Expected Entry Time: "+timeStr;
+function generateSignals(){
+    let pair = document.getElementById("pair").value;
+    let count = parseInt(document.getElementById("count").value);
 
-    startTimer(120);
+    if(!premiumUnlocked && count > 3){
+        alert("Free Trial can generate only 3 signals!");
+        count = 3;
+        document.getElementById("count").value="3";
+    }
 
-  }catch(err){
-    resultDiv.innerHTML=`API Error or Limit Exceeded!`;
-  }
+    let now = new Date();
+    let output="";
+    let history = document.getElementById("history");
+    history.innerHTML="";
+
+    for(let i=0;i<count;i++){
+        let future = new Date(now.getTime() + (i*3*60000));
+        let direction = randomDirection();
+        output += "☑ M1-"+formatTime(future)+"-"+pair+"-"+direction+"\n";
+
+        let row = `<tr>
+        <td>${i+1}</td>
+        <td>${formatTime(future)}</td>
+        <td>${pair}</td>
+        <td>${direction}</td>
+        </tr>`;
+        history.innerHTML += row;
+    }
+
+    document.getElementById("signals").innerText=output;
 }
 </script>
+
 </body>
 </html>
